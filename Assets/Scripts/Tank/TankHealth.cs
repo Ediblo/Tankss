@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using Unity.Netcode;
 
-public class TankHealth : MonoBehaviour
+public class TankHealth : NetworkBehaviour
 {
     public float m_StartingHealth = 100f;          
     public Slider m_Slider;                        
@@ -34,8 +35,8 @@ public class TankHealth : MonoBehaviour
         SetHealthUI();
     }
 
-
-    public void TakeDamage(float amount)
+    [ServerRpc (RequireOwnership = false)]
+    public void TakeDamageServerRpc(float amount)
     {
         m_CurrentHealth -= amount;
 
@@ -60,13 +61,16 @@ public class TankHealth : MonoBehaviour
     {
         m_Dead = true;
 
-        m_ExplosionParticles.transform.position = transform.position;
-        m_ExplosionParticles.gameObject.SetActive (true);
+        m_ExplosionParticles.GetComponent<NetworkObject>().Spawn();
 
-        m_ExplosionParticles.Play ();
+        m_ExplosionParticles.transform.position = transform.position;
+
+        m_ExplosionParticles.gameObject.SetActive(true);
+
+        m_ExplosionParticles.Play();
 
         m_ExplosionAudio.Play();
 
-        gameObject.SetActive (false);
+        gameObject.SetActive(false);
     }
 }
