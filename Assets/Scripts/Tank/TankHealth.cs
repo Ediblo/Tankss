@@ -40,11 +40,11 @@ public class TankHealth : NetworkBehaviour
     {
         m_CurrentHealth -= amount;
 
-        SetHealthUI ();
+        SetHealthUI();
 
         if (m_CurrentHealth <= 0f && !m_Dead)
         {
-            OnDeath ();
+            OnDeathServerRpc();
         }
     }
 
@@ -56,8 +56,8 @@ public class TankHealth : NetworkBehaviour
         m_FillImage.color = Color.Lerp (m_ZeroHealthColor, m_FullHealthColor, m_CurrentHealth / m_StartingHealth);
     }
 
-
-    private void OnDeath()
+    [ServerRpc (RequireOwnership = false)]
+    private void OnDeathServerRpc()
     {
         m_Dead = true;
 

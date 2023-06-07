@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using Unity.Netcode;
 
-public class CameraControl : MonoBehaviour
+public class CameraControl : NetworkBehaviour
 {
     public float m_DampTime = 0.2f;                 
     public float m_ScreenEdgeBuffer = 4f;           
@@ -22,6 +23,7 @@ public class CameraControl : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if(!IsOwner) return;
         Move();
         Zoom();
     }
