@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
+using UnityEngine.Networking;
 
 public class TankHealth : NetworkBehaviour
 {
@@ -14,63 +15,56 @@ public class TankHealth : NetworkBehaviour
     
     private AudioSource m_ExplosionAudio;          
     private ParticleSystem m_ExplosionParticles;   
-    private float m_CurrentHealth;  
-    private bool m_Dead;            
+    private NetworkVariable<float> m_CurrentHealth = new NetworkVariable<float>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private NetworkVariable<bool> m_Dead = new NetworkVariable<bool>();            
 
 
     private void Awake()
     {
-        m_ExplosionParticles = Instantiate(m_ExplosionPrefab).GetComponent<ParticleSystem>();
-        m_ExplosionAudio = m_ExplosionParticles.GetComponent<AudioSource>();
-
-        m_ExplosionParticles.gameObject.SetActive(false);
+      
     }
 
 
     private void OnEnable()
     {
-        m_CurrentHealth = m_StartingHealth;
-        m_Dead = false;
+        m_CurrentHealth.Value = m_StartingHealth;
+        m_Dead.Value = false;
 
-        SetHealthUI();
+        SetHealthUIServerRpc();
     }
 
     [ServerRpc (RequireOwnership = false)]
     public void TakeDamageServerRpc(float amount)
     {
-        m_CurrentHealth -= amount;
+         m_CurrentHealth.Value -= amount;
 
-        SetHealthUI();
+        SetHealthUIServerRpc();
 
-        if (m_CurrentHealth <= 0f && !m_Dead)
+        if (m_CurrentHealth.Value <= 0f && !m_Dead.Value)
         {
             OnDeathServerRpc();
         }
     }
 
 
-    private void SetHealthUI()
+    [ServerRpc (RequireOwnership = false)]
+    private void SetHealthUIServerRpc()
     {
-        m_Slider.value = m_CurrentHealth;
-
-        m_FillImage.color = Color.Lerp (m_ZeroHealthColor, m_FullHealthColor, m_CurrentHealth / m_StartingHealth);
+        m_Slider.value = m_CurrentHealth.Value;
+        m_FillImage.color = Color.Lerp(m_ZeroHealthColor, m_FullHealthColor, m_CurrentHealth.Value / m_StartingHealth);
     }
 
     [ServerRpc (RequireOwnership = false)]
     private void OnDeathServerRpc()
     {
-        m_Dead = true;
+        m_Dead.Value = true;
 
-        m_ExplosionParticles.GetComponent<NetworkObject>().Spawn();
+        GameObject tankExplosion = Instantiate(m_ExplosionPrefab, transform.position, transform.rotation);
+        tankExplosion.GetComponent<NetworkObject>().Spawn();
 
-        m_ExplosionParticles.transform.position = transform.position;
+        Destroy(tankExplosion, 1f);
 
-        m_ExplosionParticles.gameObject.SetActive(true);
-
-        m_ExplosionParticles.Play();
-
-        m_ExplosionAudio.Play();
-
-        gameObject.SetActive(false);
+        this.gameObject.GetComponent<NetworkObject>().Despawn();
+        Destroy(gameObject);
     }
 }
