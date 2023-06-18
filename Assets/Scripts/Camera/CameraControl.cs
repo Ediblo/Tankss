@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using Unity.Netcode;
 
-public class CameraControl : NetworkBehaviour
+public class CameraControl : MonoBehaviour
 {
     public float m_DampTime = 0.2f;                 
     public float m_ScreenEdgeBuffer = 4f;           
@@ -23,7 +22,6 @@ public class CameraControl : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        if(!IsOwner) return;
         Move();
         Zoom();
     }
@@ -44,9 +42,9 @@ public class CameraControl : NetworkBehaviour
 
         for (int i = 0; i < m_Targets.Length; i++)
         {
-            if (!m_Targets[i].gameObject.activeSelf)
-                continue;
-
+            //if (!m_Targets[i].gameObject.activeSelf)
+              // continue;
+           
             averagePos += m_Targets[i].position;
             numTargets++;
         }

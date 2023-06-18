@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using System.Collections;
-//using UnityEngine.SceneManagement;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Unity.Netcode;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     public int m_NumRoundsToWin = 5;        
     public float m_StartDelay = 3f;         
@@ -18,7 +19,9 @@ public class GameManager : MonoBehaviour
     private WaitForSeconds m_StartWait;     
     private WaitForSeconds m_EndWait;       
     private TankManager m_RoundWinner;
-    private TankManager m_GameWinner;       
+    private TankManager m_GameWinner;
+
+          
 
 
     private void Start()
@@ -26,7 +29,7 @@ public class GameManager : MonoBehaviour
         m_StartWait = new WaitForSeconds(m_StartDelay);
         m_EndWait = new WaitForSeconds(m_EndDelay);
 
-        SpawnAllTanks();
+        //SpawnAllTanks();
         SetCameraTargets();
 
         StartCoroutine(GameLoop());
@@ -45,12 +48,13 @@ public class GameManager : MonoBehaviour
     }
 
 
-    private void SetCameraTargets()
+    public void SetCameraTargets()
     {
         Transform[] targets = new Transform[m_Tanks.Length];
 
         for (int i = 0; i < targets.Length; i++)
         {
+            
             targets[i] = m_Tanks[i].m_Instance.transform;
         }
 
@@ -83,7 +87,7 @@ public class GameManager : MonoBehaviour
         ResetAllTanks ();
         DisableTankControl ();
 
-        m_CameraControl.SetStartPositionAndSize ();
+        m_CameraControl.SetStartPositionAndSize();
 
         m_RoundNumber++;
         m_MessageText.text = "ROUND " + m_RoundNumber;

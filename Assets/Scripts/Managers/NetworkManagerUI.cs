@@ -11,6 +11,7 @@ public class NetworkManagerUI : MonoBehaviour
     [SerializeField] private Button clientBTN;
 
     private void Awake(){
+        GameManager gameManager = FindAnyObjectByType<GameManager>();
         serverBTN.onClick.AddListener(() => {
             NetworkManager.Singleton.StartServer();
         });
